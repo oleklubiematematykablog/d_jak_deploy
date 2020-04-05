@@ -1,6 +1,5 @@
 from fastapi import FastAPI 
-from fastapi import Request
-from fastapi.responses import RedirectResponse
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -53,8 +52,8 @@ def receive_patient(pt: PatientRq):
 
 @app.get("/patient/{pk}", response_model = PatientRq)
 def searching_for_patient(pk: int):
-	if ((app.patients.len() =< pk) and (pk > 0)):
+	if ((len(app.patients) =< pk) and (pk > 0)):
 		return app.patients[pk + 1]
 	else:
-		return 204
+		raise HTTPException(status_code = 204, detail = "no_content")
 
