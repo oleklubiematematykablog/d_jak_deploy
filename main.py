@@ -39,7 +39,7 @@ def response():
 
 #3
 
-app.id = -1
+app.id = 0
 app.patients = []
 
 
