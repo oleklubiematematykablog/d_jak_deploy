@@ -18,9 +18,8 @@ app.id = -1
 
 
 
-@app.post("/patient", response_model = Patient)
+@app.post("/patient")
 async def receive_something(patient: Patient):
 	app.id += 1
 	patient.patientId = app.id
-	#return {"id": app.id, "patient": {"name": patient.name, "surename": patient.surname}}
-	return patient.dict()
+	return {"id": patient.id, "patient": {"name": patient.name, "surename": patient.surname}}
