@@ -37,7 +37,7 @@ class PatientResp(BaseModel): #patient response
 	id: int
 	patient: PatientRq
 
-app.countpatients = 0
+app.countpatients = -1
 app.patients = []
 
 
@@ -51,8 +51,8 @@ def receive_patient(pt: PatientRq):
 
 @app.get("/patient/{pk}", response_model = PatientRq)
 def searching_for_patient(pk: int):
-	if ((len(app.patients) < pk + 1) and (pk > 0)):
-		return app.patients[pk + 1]
+	if ((len(app.patients) < pk + 2) and (pk > -1)):
+		return app.patients[pk]
 	else:
 		raise HTTPException(status_code = 204, detail = "no_content")
 
