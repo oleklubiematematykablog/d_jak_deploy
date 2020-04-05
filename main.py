@@ -3,14 +3,6 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-class PatientRq(BaseModel): #patient request
-	name: str
-	surename: str
-
-class PatientResp(BaseModel): #patient response
-	patientId: int
-	patient: PatientRq
-
 app = FastAPI()
 
 #1
@@ -39,12 +31,23 @@ def response():
 
 #3
 
+class PatientRq(BaseModel): #patient request
+	name: str
+	surename: str
+
+class PatientResp(BaseModel): #patient response
+	patientId: int
+	patient: PatientRq
+
 app.id = 0
 app.patients = []
 
 
 @app.post("/patient")
-def receive_patient(patient: PatientRq):
+def receive_patient(pt: PatientRq):
 	app.id += 1
-	app.patients.append(patient)
+	patientresp: PatientResp
+	patientresp.patient = pt
+	patientresp.patientId = app.id 
+	app.patients.append(patientresp)
 	return app.patients
