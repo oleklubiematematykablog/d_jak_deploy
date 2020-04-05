@@ -47,4 +47,14 @@ app.patients = []
 def receive_patient(pt: PatientRq):
 	app.countpatients += 1
 	app.patients.append(pt)
-	return PatientResp(id = app.countpatients, patient = pt)
+	return PatientResp(id = app.countpatients, patient = pt	)
+
+#4
+
+@app.get("/patient/{pk}", response_model = PatientRq)
+def searching_for_patient(pk: int):
+	if ((app.patients.len() =< pk) and (pk > 0)):
+		return app.patients[pk + 1]
+	else:
+		return 204
+
