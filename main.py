@@ -51,7 +51,7 @@ def receive_patient(pt: PatientRq):
 
 @app.get("/patient/{pk}", response_model = PatientRq)
 def searching_for_patient(pk: int):
-	if ((len(app.patients) =< pk) and (pk > 0)):
+	if ((len(app.patients) < pk + 1) and (pk > 0)):
 		return app.patients[pk + 1]
 	else:
 		raise HTTPException(status_code = 204, detail = "no_content")
