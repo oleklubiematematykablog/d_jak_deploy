@@ -36,18 +36,15 @@ class PatientRq(BaseModel): #patient request
 	surename: str
 
 class PatientResp(BaseModel): #patient response
-	patientId: int
+	id: int
 	patient: PatientRq
 
-app.id = 0
+app.countpatients = 0
 app.patients = []
 
 
-@app.post("/patient")
+@app.post("/patient", response_model = PatientResp)
 def receive_patient(pt: PatientRq):
-	app.id += 1
-	patientresp: PatientResp
-	patientresp.patient = pt
-	patientresp.patientId = app.id 
-	app.patients.append(patientresp)
-	return app.patients
+	app.countpatients += 1
+	app.patients.append(pt)
+	return PatientResp(id = app.countpatients, patient = pt)
