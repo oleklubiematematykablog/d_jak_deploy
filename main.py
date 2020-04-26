@@ -21,13 +21,13 @@ app.patients = []
 def root():
 	return {"message": "Hello World during the coronavirus pandemic!"}
 
-templates = Jinja2Templates(directory = "templates")
+HTMLtemplates = Jinja2Templates(directory = "HTMLtemplates")
 
 @app.get("/welcome")
 def hello(request: Request, session_token: str = Cookie(None)):
 	if session_token not in app.tokens:
 		raise HTTPException(status_code = 401)
-	return templates.TemplateResponse("T4.html", {"request": request, "user": "trudnY"})
+	return HTMLtemplates.TemplateResponse("T4.html", {"request": request, "user": "trudnY"})
 
 #2
 
@@ -93,7 +93,6 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 		app.tokens.append(session_token)
 		response.headers["Location"] = "/welcome"
 		response.status_code = status.HTTP_302_FOUND
-		return response
 	else:
 		raise HTTPException(status_code = 401)
 
@@ -101,10 +100,11 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 
 @app.post("/logout")
 def logout(*, response: Response, session_token: str = Cookie(None)):
-	if session_token in app.tokens:
-		app.tokens.delete(session_token)
-		return RedirectResponse("/")
-	else:
+	if session_token not in app.tokens:
 		raise HTTPException(status_code = 401)
+	else:
+		app.tokens.remove(session_token)
+		return RedirectResponse("/")
 
+		
 
