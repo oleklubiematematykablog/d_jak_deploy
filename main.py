@@ -9,6 +9,10 @@ app = FastAPI()
 def root():
 	return {"message": "Hello World during the coronavirus pandemic!"}
 
+@app.get("/welcome")
+def root():
+	return {"Welcome": "Welcome"}
+
 #2
 
 @app.get("/method")
