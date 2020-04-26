@@ -81,15 +81,17 @@ def searching_for_patient(pk: int):
 def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
 	_username = secrets.compare_digest(credentials.username, "trudnY")
 	_password = secrets.compare_digest(credentials.password, "PaC13Nt")
-	if _username and _password:
+	if not (_username or _password):
+		raise HTTPException(status_code = 401)
+	else:
 		session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding = "utf8")).hexdigest()
 		response.set_cookie(key = "session_token", value = session_token)
 		app.tokens.append(session_token)
 		response.headers["Location"] = "/welcome"
 		response.status_code = status.HTTP_302_FOUND
 		return response
-	else:
-		raise HTTPException(status_code = 401)
+	
+		
 
 #3.3
 
