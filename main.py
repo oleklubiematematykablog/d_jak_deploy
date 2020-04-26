@@ -100,7 +100,7 @@ def logout(*, response: Response, session_token: str = Cookie(None)):
 		tokens.delete(session_token)
 		response.headers["Location"] = "/"
 		response.status_code = status.HTTP_302_FOUND
-		return response
+		return RedirectResponse("/")
 	else:
 		raise HTTPException(status_code = 401)
 
