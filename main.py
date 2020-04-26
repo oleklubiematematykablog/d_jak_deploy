@@ -51,19 +51,25 @@ app.patients = []
 
 
 @app.post("/patient", response_model = PatientResp)
-def receive_patient(pt: PatientRq):
-	app.countpatients += 1
-	app.patients.append(pt)
-	return PatientResp(id = app.countpatients, patient = pt	)
+def receive_patient(pt: PatientRq, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	else:
+		app.countpatients += 1
+		app.patients.append(pt)
+		return PatientResp(id = app.countpatients, patient = pt	)
 
 #4
 
 @app.get("/patient/{pk}", response_model = PatientRq)
-def searching_for_patient(pk: int):
-	if ((len(app.patients) > pk) and (pk > -1)):
-		return app.patients[pk - 1]
+def searching_for_patient(pk: int, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
 	else:
-		raise HTTPException(status_code = 204, detail = "no_content")
+		if ((len(app.patients) > pk) and (pk > -1)):
+			return app.patients[pk - 1]
+		else:
+			raise HTTPException(status_code = 204, detail = "no_content")
 
 #3.2 
 
