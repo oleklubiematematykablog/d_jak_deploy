@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from starlette.responses import RedirectResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from hashlib import sha256
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
@@ -14,9 +15,13 @@ app = FastAPI()
 def root():
 	return {"message": "Hello World during the coronavirus pandemic!"}
 
+templates = Jinja2Templates(directory = "templates")
+
 @app.get("/welcome")
-def root():
-	return {"Welcome": "Welcome"}
+def welcome(request: Request, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	return templates.TemplateResponse("T4.html", {"request": request, "user": "trudnY"})
 
 #2
 
@@ -103,4 +108,5 @@ def logout(*, response: Response, session_token: str = Cookie(None)):
 		return RedirectResponse("/")
 	else:
 		raise HTTPException(status_code = 401)
+
 
