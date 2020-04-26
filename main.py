@@ -111,9 +111,8 @@ def addpatient(response: Response, patient: PatientRq, session_token: str = Cook
 	if session_token not in app.tokens:
 		raise HTTPException(status_code = 401)
 	else:
-		if app.countpatients < len(app.patients):
-			app.patients.append(patient)
-			app.countpatients += 1
+		app.patients.append(patient)
+		app.countpatients += 1
 		response.set_cookie(key = "session_token", value = session_token)
 		response.headers["Location"] = f"/patient/{app.countpatients}"
 		response.status_code = status.HTTP_302_FOUND
