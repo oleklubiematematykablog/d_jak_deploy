@@ -79,7 +79,8 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 		session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding = "utf8")).hexdigest()
 		response.set_cookie(key = "session_token", value = session_token)
 		app.tokens.append(session_token)
-		response = RedirectResponse("/welcome")
+		response.headers["Location"] = "/welcome"
+		response.status_code = status.HTTP_302_FOUND
 		return response
 	else:
 		raise HTTPException(status_code = 401)
@@ -89,8 +90,10 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 @app.post("/logout")
 def logout(*, response: Response, session_token: str = Cookie(None)):
 	if session_token in tokens:
+		response.delete_cookie("session_token")
 		tokens.delete(session_token)
-		response = RedirectResponse("/")
+		response.headers["Location"] = "/"
+		response.status_code = status.HTTP_302_FOUND
 		return response
 	else:
 		raise HTTPException(status_code = 401)
