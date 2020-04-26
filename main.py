@@ -8,6 +8,12 @@ from hashlib import sha256
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+app.secret_key = "very constant and random secret, best 64 characters"
+security = HTTPBasic()
+app.tokens = []
+
+app.countpatients = -1
+app.patients = []
 
 #1
 
@@ -51,9 +57,6 @@ class PatientResp(BaseModel): #patient response
 	id: int
 	patient: PatientRq
 
-app.countpatients = -1
-app.patients = []
-
 
 @app.post("/patient", response_model = PatientResp)
 def receive_patient(pt: PatientRq, session_token: str = Cookie(None)):
@@ -78,9 +81,7 @@ def searching_for_patient(pk: int, session_token: str = Cookie(None)):
 
 #3.2 
 
-app.secret_key = "very constant and random secret, best 64 characters"
-security = HTTPBasic()
-app.tokens = []
+
 
 @app.post("/login")
 def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
@@ -101,10 +102,7 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 @app.post("/logout")
 def logout(*, response: Response, session_token: str = Cookie(None)):
 	if session_token in tokens:
-		response.delete_cookie("session_token")
 		tokens.delete(session_token)
-		response.headers["Location"] = "/"
-		response.status_code = status.HTTP_302_FOUND
 		return RedirectResponse("/")
 	else:
 		raise HTTPException(status_code = 401)
