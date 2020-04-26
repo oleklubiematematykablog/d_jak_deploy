@@ -89,7 +89,7 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 def logout(*, response: Response, session_token: str = Cookie(None)):
 	if session_token in tokens:
 		tokens.delete(session_token)
-		return RedirectResponse("/")
+		return response.RedirectResponse("/")
 	else:
 		raise HTTPException(status_code = 401)
 
