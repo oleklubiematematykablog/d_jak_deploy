@@ -116,6 +116,7 @@ def addpatient(response: Response, patient: PatientRq, session_token: str = Cook
 		response.set_cookie(key = "session_token", value = session_token)
 		response.headers["Location"] = f"/patient/{app.howmanypatients}"
 		response.status_code = status.HTTP_302_FOUND
+		return response
 
 @app.get("/patient")
 def showpatients(response: Response, session_token: str = Cookie(None)):
@@ -139,3 +140,4 @@ def deletepatient(response: Response, id: int, session_token: str = Cookie(None)
 		raise HTTPException(status_code = 401)
 	app.patients.pop(id, None)
 	response.status_code = HTTP_204_NO_CONTENT
+	return response
