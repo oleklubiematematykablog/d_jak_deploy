@@ -58,20 +58,20 @@ class PatientResp(BaseModel): #patient response
 	patient: PatientRq
 
 
-@app.post("/patient", response_model = PatientResp)
-def receive_patient(pt: PatientRq):
-	app.countpatients += 1
-	app.patients.append(pt)
-	return PatientResp(id = app.countpatients, patient = pt	)
+#@app.post("/patient", response_model = PatientResp)
+#def receive_patient(pt: PatientRq):
+	#app.countpatients += 1
+	#app.patients.append(pt)
+	#return PatientResp(id = app.countpatients, patient = pt	)
 
 #4
 
-@app.get("/patient/{pk}", response_model = PatientRq)
-def searching_for_patient(pk: int):
-	if ((len(app.patients) > pk) and (pk > -1)):
-		return app.patients[pk - 1]
-	else:
-		raise HTTPException(status_code = 204, detail = "no_content")
+#@app.get("/patient/{pk}", response_model = PatientRq)
+#def searching_for_patient(pk: int):
+	#if ((len(app.patients) > pk) and (pk > -1)):
+		#return app.patients[pk - 1]
+	#else:
+		#raise HTTPException(status_code = 204, detail = "no_content")
 
 #3.2 
 
@@ -104,4 +104,39 @@ def logout(*, response: Response, session_token: str = Cookie(None)):
 		return RedirectResponse("/")
 
 		
+#3.5
 
+app.post("/patient")
+def addpatient(response: Response, patient: PatientRq, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	else:
+		if app.countpatients < len(app.patients):
+			app.patients.append(patient)
+			app.countpatients += 1
+		response.set_cookie(key = "session_token", value = session_token)
+		response.headers["Location"] = f"/patient/{app.countpatients}"
+		response.status_code = status.HTTP_302_FOUND
+
+@app.get("/patient")
+def showpatients(response: Response, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	else:
+		return app.patients
+
+@app.get("/patient/{id}")
+def showpatient(response: Response, id: int, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	else:
+		response.set_cookie(key = "session_token", value = session_token)
+		if id in range(len(app.patients)):
+			return app.patients[id]
+
+@app.delete("/patient/{id}")
+def deletepatient(response: Response, id: int, session_token: str = Cookie(None)):
+	if session_token not in app.tokens:
+		raise HTTPException(status_code = 401)
+	app.patients.pop(id, None)
+	response.status_code = HTTP_204_NO_CONTENT
