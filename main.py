@@ -74,7 +74,7 @@ app.tokens = []
 def login(user: str, password: str, response: Response):
 	if user in app.users and password == app.users[user]:
 		session_token = sha256(bytes(f"{user}{password}{app.secret_key}")).hexdigest()
-		app.tokens.append(session_token)
+		app.tokens += session_token
 		response.set_cookie(key="session_token", value = session_token)
 		response = RedirectResponse(url="/welcome")
 		return response
