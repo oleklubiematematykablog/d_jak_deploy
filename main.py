@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, status
 from fastapi import Depends, Cookie, HTTPException
 import secrets
 from pydantic import BaseModel
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from hashlib import sha256
 
@@ -79,7 +79,7 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 		session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding = "utf8")).hexdigest()
 		response.set_cookie(key = "session_token", value = session_token)
 		app.tokens.append(session_token)
-		response.headers["Location"] = "/welcome"
+		response.headers["Location"] = RedirectResponse("/welcome")
 		return response
 	else:
 		raise HTTPException(status_code = 401)
@@ -90,7 +90,7 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 def logout(*, response: Response, session_token: str = Cookie(None)):
 	if session_token in tokens:
 		tokens.delete(session_token)
-		response.headers["Location"] = "/"
+		response.headers["Location"] = RedirectResponse("/")
 		return response
 	else:
 		raise HTTPException(status_code = 401)
