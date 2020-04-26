@@ -79,7 +79,8 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 		session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding = "utf8")).hexdigest()
 		response.set_cookie(key = "session_token", value = session_token)
 		app.tokens.append(session_token)
-		return RedirectResponse(url = "/welcome")
+		response.headers["Location"] = "/welcome"
+		return response
 	else:
 		raise HTTPException(status_code = 401)
 
