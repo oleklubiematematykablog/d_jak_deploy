@@ -93,6 +93,7 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 		app.tokens.append(session_token)
 		response.headers["Location"] = "/welcome"
 		response.status_code = status.HTTP_302_FOUND
+		return response
 	else:
 		raise HTTPException(status_code = 401)
 
