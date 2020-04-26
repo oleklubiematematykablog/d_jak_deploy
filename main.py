@@ -24,7 +24,7 @@ def root():
 templates = Jinja2Templates(directory = "templates")
 
 @app.get("/welcome")
-def welcome(request: Request, session_token: str = Cookie(None)):
+def hello(request: Request, session_token: str = Cookie(None)):
 	if session_token not in app.tokens:
 		raise HTTPException(status_code = 401)
 	return templates.TemplateResponse("T4.html", {"request": request, "user": "trudnY"})
@@ -101,8 +101,8 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 
 @app.post("/logout")
 def logout(*, response: Response, session_token: str = Cookie(None)):
-	if session_token in tokens:
-		tokens.delete(session_token)
+	if session_token in app.tokens:
+		app.tokens.delete(session_token)
 		return RedirectResponse("/")
 	else:
 		raise HTTPException(status_code = 401)
