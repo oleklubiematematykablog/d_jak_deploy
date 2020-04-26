@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response, status
 from fastapi import Depends, Cookie, HTTPException
+import secrets
 from pydantic import BaseModel
 from starlette.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -67,17 +68,18 @@ def searching_for_patient(pk: int):
 #3.2 
 
 app.secret_key = "very constant and random secret, best 64 characters"
-app.users = {"trudnY": "PaC13Nt"}
+security = HTTPBasic()
 app.tokens = []
 
 @app.post("/login")
-def login(user: str, password: str, response: Response):
-	if user in app.users and password == app.users[user]:
-		session_token = sha256(bytes(f"{user}{password}{app.secret_key}")).hexdigest()
-		app.tokens += session_token
-		response.set_cookie(key="session_token", value = session_token)
-		response = RedirectResponse(url="/welcome")
-		return response
+def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+	_username = secrets.compare_digest(credentials.username, "trudnY")
+	_password = secrets.compare_digest(credentials.password, "PaC13Nt")
+	if _username and _password:
+		session_token = sha256(bytes(f"{credentials.username}{credentials.password}{app.secret_key}", encoding = "utf8")).hexdigest()
+		response.set_cookie(key = "session_token", value = session_token)
+		app.tokens.append(session_token)
+		return RedirectResponse(url = "/welcome")
 	else:
 		raise HTTPException(status_code = 401)
 
