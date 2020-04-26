@@ -14,7 +14,7 @@ app.tokens = []
 
 app.countpatients = -1
 app.patients = []
-
+app.howmanypatients = 0
 #1
 
 @app.get("/")
@@ -112,9 +112,9 @@ def addpatient(response: Response, patient: PatientRq, session_token: str = Cook
 		raise HTTPException(status_code = 401)
 	else:
 		app.patients.append(patient)
-		app.countpatients += 1
+		app.howmanypatients += 1
 		response.set_cookie(key = "session_token", value = session_token)
-		response.headers["Location"] = f"/patient/{app.countpatients}"
+		response.headers["Location"] = f"/patient/{app.howmanypatients}"
 		response.status_code = status.HTTP_302_FOUND
 
 @app.get("/patient")
@@ -130,7 +130,7 @@ def showpatient(response: Response, id: int, session_token: str = Cookie(None)):
 		raise HTTPException(status_code = 401)
 	else:
 		response.set_cookie(key = "session_token", value = session_token)
-		if id in range(len(app.patients)):
+		if id in range(app.howmanypatients + 1):
 			return app.patients[id]
 
 @app.delete("/patient/{id}")
