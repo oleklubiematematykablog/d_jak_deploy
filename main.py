@@ -205,7 +205,7 @@ async def get_tracks(composer_name: str):
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	return data
 
-@app.post("/albums", response_model = AlbumResp)
+@app.post("/albums", response_model = AlbumResp, status_code = 201)
 async def add_album(response: Response, request: AlbumRq):
 	artist = app.db_connection.execute(
 		"SELECT * FROM artists WHERE artistId = ?", (request.artist_id,)).fetchall()
@@ -216,8 +216,7 @@ async def add_album(response: Response, request: AlbumRq):
 	app.db_connection.commit()
 	new_album_id = cursor.lastrowid
 	response.status_code = 201
-	response.Album = AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artist_id)
-	return response
+	return Album = AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artist_id)
 
 @app.get("/albums/{album_id}", response_model = AlbumResp)
 async def verify_album(album_id: int):
