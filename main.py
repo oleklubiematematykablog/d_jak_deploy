@@ -154,7 +154,7 @@ import sqlite3
 
 class AlbumRq(BaseModel):
 	title: str
-	artistId: int
+	artist_id: int
 
 class AlbumResp(BaseModel):
 	AlbumId: str
@@ -208,15 +208,15 @@ async def get_tracks(composer_name: str):
 @app.post("/albums", response_model = AlbumResp)
 async def add_album(response: Response, request: AlbumRq):
 	artist = app.db_connection.execute(
-		"SELECT * FROM artists WHERE artistId = ?", (request.artistId,)).fetchall()
+		"SELECT * FROM artists WHERE artistId = ?", (request.artist_id,)).fetchall()
 	if len(artist) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	cursor = app.db_connection.execute(
-		"INSERT INTO albums (title, artistId) VALUES (?,?)", (request.title, request.artistId))
+		"INSERT INTO albums (title, artistId) VALUES (?,?)", (request.title, request.artist_id))
 	app.db_connection.commit()
 	new_album_id = cursor.lastrowid
 	response.status_code = 201
-	return AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artistId)
+	return AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artist_id)
 
 @app.get("/albums/{album_id}", response_model = AlbumResp)
 async def verify_album(album_id: int):
