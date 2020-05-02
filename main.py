@@ -151,7 +151,6 @@ from fastapi.encoders import jsonable_encoder
 import sqlite3
 #import aiosqlite
 
-app = FastAPI()
 
 class AlbumRq(BaseModel):
 	title: str
@@ -209,7 +208,7 @@ async def get_tracks(composer_name: str):
 @app.post("/albums", response_model = AlbumResp)
 async def add_album(response: Response, request: AlbumRq):
 	artist = app.db_connection.execute(
-		"SELECT * FROM artists WHERE artistId = ?", (request.artistId, )).fetchall()
+		"SELECT * FROM artists WHERE artistId = ?", (request.artistId,)).fetchall()
 	if len(artist) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	cursor = app.db_connection.execute(
