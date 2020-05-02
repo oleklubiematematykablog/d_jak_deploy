@@ -223,10 +223,10 @@ async def add_album(response: Response, request: AlbumRq):
 async def verify_album(album_id: int):
 	app.db_connection.row_factory = sqlite3.Row
 	data = app.db_connection.execute(
-		f"SELECT * FROM albums WHERE albumId = {album_id}").fetchone()
+		f"SELECT * FROM albums WHERE albumId = {album_id}").fetchall()
 	if len(data) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
-	return AlbumResp(AlbumId = album_id, Title = data["title"], ArtistId = data["artistId"])
+	return AlbumResp(AlbumId = album_id, Title = data[0]["title"], ArtistId = data[0]["artistId"])
 
 @app.put("/customers/{customer_id}", response_model = Customer)
 async def edit_customer_data(customer_id: int, customer: Customer):
