@@ -145,10 +145,7 @@ def deletepatient(response: Response, id: int, session_token: str = Cookie(None)
 
 
 
-
-
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder 
 import sqlite3
@@ -193,17 +190,17 @@ async def root(page: int = 0, per_page: int = 10):
 	max = min + per_page
 	app.db_connection.row_factory = sqlite3.Row 
 	if page == 0:
-		tracks = cursor.execute(
+		tracks = app.db_connection.execute(
 			f"SELECT * FROM tracks WHERE trackId >= {min} AND trackId <= {max} ").fetchall()
 	else:
-		tracks = cursor.execute(
+		tracks = app.db_connection.execute(
 			f"SELECT * FROM tracks WHERE trackId > {min} AND trackId <= {max} ").fetchall()	
 	return tracks
 
 @app.get("/tracks/composers")
 async def get_tracks(composer_name: str):
 	app.db_connection.row_factory = lambda cursor, x: x[0]
-	data = cursor.execute(
+	data = app.db_connection.execute(
 		"SELECT name FROM tracks WHERE composer = ? ORDER BY name ASC", (composer_name,)).fetchall()
 	if len(data) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
@@ -260,3 +257,4 @@ async def statistics(category: str):
 	else:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	return data
+
