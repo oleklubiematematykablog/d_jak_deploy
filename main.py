@@ -217,7 +217,7 @@ async def add_album(response: Response, request: AlbumRq):
 	app.db_connection.commit()
 	new_album_id = cursor.lastrowid
 	response.status_code = 201
-	return AlbumResp(albumId = cursor.lastrowid, title = request.title, artistId = rq.artistId)
+	return AlbumResp(albumId = new_album_id, title = request.title, artistId = request.artistId)
 
 @app.get("/albums/{album_id}", response_model = AlbumResp)
 async def verify_album(album_id: int):
