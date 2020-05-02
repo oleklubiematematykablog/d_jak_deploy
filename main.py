@@ -141,3 +141,122 @@ def deletepatient(response: Response, id: int, session_token: str = Cookie(None)
 	app.patients.pop(id, None)
 	response.status_code = HTTP_204_NO_CONTENT
 	return response
+
+
+
+
+
+
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder 
+import sqlite3
+#import aiosqlite
+
+app = FastAPI()
+
+class AlbumRq(BaseModel):
+	title: str
+	artistId: int
+
+class AlbumResp(BaseModel):
+	albumId: str
+	title: str
+	artistId: int
+
+class Customer(BaseModel):
+	customerId: int = None
+	firstName: str = None
+	lastName: str = None
+	company: str = None
+	adress: str = None
+	city: str = None
+	state: str = None
+	country: str = None
+	postalcode: str = None
+	fax: str = None
+	email: str = None
+	supportRepId: int = None
+
+@app.on_event("startup")
+async def startup():
+	app.db_connection = sqlite3.connect('chinook.db')
+
+@app.on_event("shutdown")
+async def startup():
+	await app.db_connection.close()
+
+@app.get("/tracks")
+async def root(page: int = 0, per_page: int = 10):
+	min = page * per_page
+	max = min + per_page
+	app.db_connection.row_factory = sqlite3.Row 
+	if page == 0:
+		tracks = cursor.execute(
+			f"SELECT * FROM tracks WHERE trackId >= {min} AND trackId <= {max} ").fetchall()
+	else:
+		tracks = cursor.execute(
+			f"SELECT * FROM tracks WHERE trackId > {min} AND trackId <= {max} ").fetchall()	
+	return tracks
+
+@app.get("/tracks/composers")
+async def get_tracks(composer_name: str):
+	app.db_connection.row_factory = lambda cursor, x: x[0]
+	data = cursor.execute(
+		"SELECT name FROM tracks WHERE composer = ? ORDER BY name ASC", (composer_name,)).fetchall()
+	if len(data) == 0:
+		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
+	return data
+
+@app.post("/albums", response_model = AlbumResp)
+async def add_album(response: Response, request: AlbumRq):
+	artist = app.db_connection.execute(
+		"SELECT * FROM artists WHERE artistId = ?", (request.artistId, ))
+	if len(artist) == 0:
+		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
+	cursor = app.db_connection.execute(
+		"INSERT INTO albums (title, artistId) VALUES (?,?)", (request.title, request.artistId))
+	app.db_connection.commit()
+	new_album_id = cursor.lastrowid
+	response.status_code = 201
+	return AlbumResp(albumId = new_album_id, title = request.title, artistId = rq.artistId)
+
+@app.get("/albums/{album_id}", response_model = AlbumResp)
+async def verify_album(album_id: int):
+	app.db_connection.row_factory = sqlite3.Row
+	data = app.db_connection.execute(
+		f"SELECT * FROM albums WHERE albumId = {album_id}").fetchone()
+	if len(data) == 0:
+		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
+	return AlbumResp(albumId = album_id, title = data[0]["title"], artistId = data[0]["artistId"])
+
+@app.put("/customers/{customer_id}", response_model = Customer)
+async def edit_customer_data(customer_id: int, customer: Customer):
+	cursor = app.db_connection.cursor()
+	customer_to_update_data = cursor.execute(
+		f"SELECT * FROM customers WHERE customerId = {customer_id}").fetchone()
+	customer_to_update_model = Customer(**customer_to_update_data)
+	update_data = customer.dict(exclude_unset = True)
+	customer_updated = customer_to_update_model.copy(update = update_data)
+	customer_updated = jsonable_encoder(customer_updated)
+	cursor = app.db_connection.execute(
+		"UPDATE customers SET * = ")
+
+@app.get("/sales")
+async def statistics(category: str):
+	app.db_connection.row_factory = sqlite3.Row
+	if category == "customers":
+		data = app.db_connection.execute(
+			'''SELECT c.customerId, c.phone, c.email, ROUND(SUM(total), 2) AS Sum
+			 FROM customers c JOIN invoices i ON c.customerId = i.customerId
+			 GROUP BY c.customerId ORDER BY Sum DESC, c.customerId''').fetchall()
+	elif category == "genres":
+		data = app.db_connection.execute('''
+			SELECT g.name, SUM(quantity) AS Sum FROM genres g
+			JOIN tracks t ON t.genreId = g.genreId
+			JOIN invoice_items ii ON ii.trackId = t.trackId
+			GROUP BY g.name ORDER BY Sum DESC, g.name''').fetchall()
+	else:
+		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
+	return data
