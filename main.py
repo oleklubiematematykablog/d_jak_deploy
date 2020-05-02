@@ -205,7 +205,7 @@ async def get_tracks(composer_name: str):
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	return data
 
-@app.post("/albums", response_model = AlbumResp, status_code = 201)
+@app.post("/albums", response_model = AlbumResp)
 async def add_album(response: Response, request: AlbumRq):
 	artist = app.db_connection.execute(
 		"SELECT * FROM artists WHERE artistId = ?", (request.artist_id,)).fetchall()
@@ -215,14 +215,14 @@ async def add_album(response: Response, request: AlbumRq):
 		"INSERT INTO albums (title, artistId) VALUES (?,?)", (request.title, request.artist_id))
 	app.db_connection.commit()
 	new_album_id = cursor.lastrowid
-	response.status_code = 201
+	response.status_code = status.HTTP_201_CREATED
 	return AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artist_id)
 
 @app.get("/albums/{album_id}", response_model = AlbumResp)
 async def verify_album(album_id: int):
 	app.db_connection.row_factory = sqlite3.Row
 	data = app.db_connection.execute(
-		f"SELECT * FROM albums WHERE albumId = {album_id}").fetchall()
+		"SELECT * FROM albums WHERE albumId = ?", (album_id,)).fetchall()
 	if len(data) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	return AlbumResp(AlbumId = album_id, Title = data[0]["title"], ArtistId = data[0]["artistId"])
