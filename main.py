@@ -159,8 +159,8 @@ class AlbumRq(BaseModel):
 
 class AlbumResp(BaseModel):
 	AlbumId: str
-	title: str
-	artistId: int
+	Title: str
+	ArtistId: int
 
 class Customer(BaseModel):
 	customerId: int = None
@@ -209,7 +209,7 @@ async def get_tracks(composer_name: str):
 @app.post("/albums", response_model = AlbumResp)
 async def add_album(response: Response, request: AlbumRq):
 	artist = app.db_connection.execute(
-		"SELECT * FROM artists WHERE artistId = ?", (request.artistId, ))
+		"SELECT * FROM artists WHERE artistId = ?", (request.artistId, )).fetchall()
 	if len(artist) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
 	cursor = app.db_connection.execute(
@@ -217,7 +217,7 @@ async def add_album(response: Response, request: AlbumRq):
 	app.db_connection.commit()
 	new_album_id = cursor.lastrowid
 	response.status_code = 201
-	return AlbumResp(AlbumId = new_album_id, title = request.title, artistId = request.artistId)
+	return AlbumResp(AlbumId = new_album_id, Title = request.title, ArtistId = request.artistId)
 
 @app.get("/albums/{album_id}", response_model = AlbumResp)
 async def verify_album(album_id: int):
@@ -226,7 +226,7 @@ async def verify_album(album_id: int):
 		f"SELECT * FROM albums WHERE albumId = {album_id}").fetchone()
 	if len(data) == 0:
 		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
-	return AlbumResp(AlbumId = album_id, title = data["title"], artistId = data["artistId"])
+	return AlbumResp(AlbumId = album_id, Title = data["title"], ArtistId = data["artistId"])
 
 @app.put("/customers/{customer_id}", response_model = Customer)
 async def edit_customer_data(customer_id: int, customer: Customer):
