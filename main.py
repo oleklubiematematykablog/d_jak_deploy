@@ -231,13 +231,21 @@ async def verify_album(album_id: int):
 async def edit_customer_data(customer_id: int, customer: Customer):
 	cursor = app.db_connection.cursor()
 	customer_to_update_data = cursor.execute(
-		f"SELECT * FROM customers WHERE customerId = {customer_id}").fetchone()
-	customer_to_update_model = Customer(**customer_to_update_data)
+		"SELECT * FROM customers WHERE customerId = ?", (customer_id, )).fetchall()
+	if len(customer_to_update_data) == 0:
+		raise HTTPException(status_code = 404, detail = {"error": "Item not found"})
+	customer_to_update_model = Customer(**customer_to_update_data[0])
 	update_data = customer.dict(exclude_unset = True)
 	customer_updated = customer_to_update_model.copy(update = update_data)
 	customer_updated = jsonable_encoder(customer_updated)
 	cursor = app.db_connection.execute(
-		"UPDATE customers SET * = ")
+		"UPDATE customers SET * = (?,?,?,?,?,?,?,?,?,?,?,?)", (customer_updated["customerId"],
+			customer_updated["firstName"], customer_updated["lastName"], customer_updated["company"],
+			customer_updated["adress"], customer_updated["city"], customer_updated["state"],
+			customer_updated["country"], customer_updated["postalcode"],
+			customer_updated["fax"], customer_updated["email"], customer_updated["supportRepId"]))
+	app.db_connection.commit()
+	return customer_updated
 
 @app.get("/sales")
 async def statistics(category: str):
